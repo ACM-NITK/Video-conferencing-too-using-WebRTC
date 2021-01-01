@@ -2,7 +2,6 @@ from asgiref.sync import async_to_sync
 from channels.generic.websocket import WebsocketConsumer
 import json
 
-
 class ConnectConsumer(WebsocketConsumer):
     def connect(self):
         # print("HERE")
@@ -12,7 +11,7 @@ class ConnectConsumer(WebsocketConsumer):
             self.room_id,
             {
                 'type': 'connection_message',
-                'obj': {'id': self.user_id, 'type': 1}
+                'obj': {'name':self.user_id,'type':'joined'}
             }
         )
         async_to_sync(self.channel_layer.group_add)(
@@ -26,36 +25,23 @@ class ConnectConsumer(WebsocketConsumer):
             self.room_id,
             {
                 'type': 'connection_message',
-                'obj': {'id': self.user_id, 'type': 0}
+                'obj': {'name':self.user_id,'type':'left'}
             }
         )
         async_to_sync(self.channel_layer.group_discard)(
             self.room_id,
             self.channel_name
         )
-# made changes here
 
     def receive(self, text_data):
         text_data_json = json.loads(text_data)
-        id = text_data_json['id']
-        type = text_data_json['type']
-        message = text_data_json['message']
-        if type == 3:
-            async_to_sync(self.channel_layer.group_send)(
-                self.room_id,
-                {
-                    'type': 'connection_message',
-                    'obj': {'id': id, 'type': 3, 'message': message}
-                }
-            )
-        else:
-            async_to_sync(self.channel_layer.group_send)(
-                self.room_id,
-                {
-                    'type': 'connection_message',
-                    'obj': {'id': id, 'type': 2}
-                }
-            )
+        async_to_sync(self.channel_layer.group_send)(
+            self.room_id,
+            {
+                'type': 'connection_message',
+                'obj': text_data_json
+            }
+        )
 
     def connection_message(self, event):
         self.send(text_data=json.dumps({
