@@ -1,11 +1,6 @@
-from django.shortcuts import render
-from .models import *
-
+from django.shortcuts import render\
 from django.http import JsonResponse
 from django.views import View
-from django.views.decorators.csrf import csrf_exempt
-from django.utils.decorators import method_decorator
-import json
 from .aes_encryption import *
 
 # Create your views here.
