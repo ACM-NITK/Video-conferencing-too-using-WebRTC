@@ -2,9 +2,9 @@ var localStream = null;
 var videoalreadyadded = []
 var conntetedpeers = new Object()
 var displayMediaStream = null
-var endpoint = 'ws://' + window.location.host + '/ws/' + room_id + '/' + user_name + '/'
+var endpoint = 'wss://' + window.location.host + '/ws/' + room_id + '/' + user_name + '/'
 var mediaConstraints = {
-    audio: false,
+    audio: true,
     video: true
 };
 var screenshare = false;
@@ -14,7 +14,7 @@ socket.onmessage = function (e) {
     var data = JSON.parse(e.data).obj
     if (data.type === "joined" && screenshare === true) {
         invite(data);
-        setTimeout(function () { handlescreenshareandvid(data) }, 1000);
+        setTimeout(function () { handlescreenshareandvid(data) }, 4000);
     }
     else if (data.type === "joined")
         invite(data)
@@ -34,7 +34,7 @@ function handlescreenshareandvid(data) {
     console.log(data.name);
     user_name = user_name + '$';
     inviteShare(data.name);
-    setTimeout(function () { user_name = user_name.substring(0, user_name.length - 1) }, 1000);
+    setTimeout(function () { user_name = user_name.substring(0, user_name.length - 1) }, 4000);
 }
 async function getLocalStreamFunc() {
     localStream = await navigator.mediaDevices.getUserMedia(mediaConstraints)
@@ -136,15 +136,16 @@ function handleLeftMsg(msg) {
     delete conntetedpeers[msg.name]
 }
 function handleleftscreenshare(msg) {
+    videoalreadyadded = videoalreadyadded.filter(i => i !== msg.name)
     document.getElementById(msg.name).remove();
     delete conntetedpeers[msg.name];
 }
 async function shareScreen() {
     user_name = user_name + "$"
     screenshare = true
-    if (!displayMediaStream) {
-        displayMediaStream = await navigator.mediaDevices.getDisplayMedia();
-    }
+
+    displayMediaStream = await navigator.mediaDevices.getDisplayMedia();
+
     addVideoStream(displayMediaStream, user_name)
     for (var key in conntetedpeers) {
         inviteShare(key);
@@ -179,55 +180,45 @@ function addVideoStream(stream, user_id) {
     videoGrid.append(video)
     videoalreadyadded = [...videoalreadyadded, user_id]
 }
-function muteUnmute()
-	{
-		var enabled = localStream.getAudioTracks()[0].enabled;
-		if (enabled)
-		{
-			localStream.getAudioTracks()[0].enabled = false;
-			// document.getElementById(user_name).srcObject.getAudioTracks()[0].enabled = false;
-			setUnmuteButton();
-		}
-		else
-		{
-			setMuteButton();
-			localStream.getAudioTracks()[0].enabled = true;
-			// document.getElementById(user_name).srcObject.getAudioTracks()[0].enabled = true;
-		}
-	}
-	function playStop()
-	{
-		var enabled = localStream.getVideoTracks()[0].enabled;
-		if (enabled)
-		{
-			localStream.getVideoTracks()[0].enabled = false;
-			document.getElementById(user_name).srcObject.getVideoTracks()[0].enabled = false;
-			setPlayVideo()
-		}
-		else
-		{
-			setStopVideo()
-			localStream.getVideoTracks()[0].enabled = true;
-			document.getElementById(user_name).srcObject.getVideoTracks()[0].enabled = true;
-		}
-	}
-	function setMuteButton()
-	{
-		const html = `<button onclick="muteUnmute()"><i class="fas fa-microphone"></i></button>`
-		document.querySelector('.main__mute_button').innerHTML = html;
-	}
-	function setUnmuteButton()
-	{
-		const html = `<button class="btn-sec" onclick="muteUnmute()"><i class="fas fa-microphone-slash"></i></button>`
-		document.querySelector('.main__mute_button').innerHTML = html;
-	}
-	function setStopVideo()
-	{
-		const html = `<button onclick="playStop()"><i class="fas fa-video"></i></button>`
-		document.querySelector('.main__video_button').innerHTML = html;
-	}
-	function setPlayVideo()
-	{
-		const html = `<button class="btn-sec" onclick="playStop()"><i class="fas fa-video-slash"></i></button>`
-		document.querySelector('.main__video_button').innerHTML = html;
-	}
+function muteUnmute() {
+    var enabled = localStream.getAudioTracks()[0].enabled;
+    if (enabled) {
+        localStream.getAudioTracks()[0].enabled = false;
+        // document.getElementById(user_name).srcObject.getAudioTracks()[0].enabled = false;
+        setUnmuteButton();
+    }
+    else {
+        setMuteButton();
+        localStream.getAudioTracks()[0].enabled = true;
+        // document.getElementById(user_name).srcObject.getAudioTracks()[0].enabled = true;
+    }
+}
+function playStop() {
+    var enabled = localStream.getVideoTracks()[0].enabled;
+    if (enabled) {
+        localStream.getVideoTracks()[0].enabled = false;
+        document.getElementById(user_name).srcObject.getVideoTracks()[0].enabled = false;
+        setPlayVideo()
+    }
+    else {
+        setStopVideo()
+        localStream.getVideoTracks()[0].enabled = true;
+        document.getElementById(user_name).srcObject.getVideoTracks()[0].enabled = true;
+    }
+}
+function setMuteButton() {
+    const html = `<button onclick="muteUnmute()"><i class="fas fa-microphone"></i></button>`
+    document.querySelector('.main__mute_button').innerHTML = html;
+}
+function setUnmuteButton() {
+    const html = `<button class="btn-sec" onclick="muteUnmute()"><i class="fas fa-microphone-slash"></i></button>`
+    document.querySelector('.main__mute_button').innerHTML = html;
+}
+function setStopVideo() {
+    const html = `<button onclick="playStop()"><i class="fas fa-video"></i></button>`
+    document.querySelector('.main__video_button').innerHTML = html;
+}
+function setPlayVideo() {
+    const html = `<button class="btn-sec" onclick="playStop()"><i class="fas fa-video-slash"></i></button>`
+    document.querySelector('.main__video_button').innerHTML = html;
+}
