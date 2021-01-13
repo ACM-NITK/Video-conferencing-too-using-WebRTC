@@ -3,6 +3,6 @@ from .views import *
 
 
 urlpatterns = [
-    path('meet/<str:room_id>/<str:user_name>/', home_page, name="home_page"),
-    path('api/<str:room_id>/<str:user_name>/', APIResponse.as_view()),
+    path('meet/<str:room_id>/<str:user_name>/<str:randomKey>', home_page, name="home_page"),
+    path('api/<str:room_id>/<str:user_name>/', MeetingUrl.as_view()),
 ]
