@@ -15,10 +15,10 @@ class BaseMiddleware(object):
 class decryptUrlMiddleware(BaseMiddleware):
 
     def process_request(self, request):
-        print("Path Info" + request.path_info)
+        # print("Path Info" + request.path_info)
 
         checkForApiUrl = request.path_info[:5]
-        print("checkForApiUrl " + checkForApiUrl)
+        # print("checkForApiUrl " + checkForApiUrl)
 
         if (checkForApiUrl == "/api/"):
             return None
@@ -28,8 +28,7 @@ class decryptUrlMiddleware(BaseMiddleware):
         url_path = request.path_info
         refined_url_path = url_path[1:]  # Removing the forward slash
         decrypted_path = decrypterObj.aesdecrypt(refined_url_path)
-        refined_decrypted_path = "/" + decrypted_path
+        refined_decrypted_path = "/" + decrypted_path    
 
         request.path_info = refined_decrypted_path
-        print("Decryption Done")
-        print("Path Info" + request.path_info)
+        # print("Decryption Done")

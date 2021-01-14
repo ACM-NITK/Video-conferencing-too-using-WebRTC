@@ -12,7 +12,7 @@ class AESCipher(object):
         plain_text = self.__pad(plain_text)
         iv = "qwertyuioplkjhgf".encode()
         cipher = AES.new(self.key, AES.MODE_CBC, iv)
-        encrypted_text = cipher.encrypt(plain_text.encode("utf-8").strip())
+        encrypted_text = cipher.encrypt(plain_text.encode())
         print(len(b64encode(iv + encrypted_text).decode("utf-8")))
         return b64encode(iv + encrypted_text).decode("utf-8")
 
