@@ -2,11 +2,14 @@ var localStream = null;
 var videoalreadyadded = []
 var conntetedpeers = new Object()
 var displayMediaStream = null
-var endpoint = 'wss://' + window.location.host + '/ws/' + room_id + '/' + user_name + '/'
+var endpoint = 'ws://' + window.location.host + '/ws/' + room_id + '/' + user_name + '/'
 var mediaConstraints = {
     audio: true,
     video: true
 };
+var messages = [];
+
+        
 var screenshare = false;
 getLocalStreamFunc()
 socket = new WebSocket(endpoint)
@@ -28,6 +31,8 @@ socket.onmessage = function (e) {
         handleLeftMsg(data)
     else if (data.type === "screenShareLeft")
         handleleftscreenshare(data);
+    else if (data.type === "msg")
+        messagecame(data.message, data.user_name)
 
 }
 function handlescreenshareandvid(data) {
@@ -180,6 +185,67 @@ function addVideoStream(stream, user_id) {
     videoGrid.append(video)
     videoalreadyadded = [...videoalreadyadded, user_id]
 }
+var isMessageOpen=false
+var firsttime=true;
+messages.forEach(i => $("ul").append(`<li class="message">${i}</li>`));
+function toggleNav(){
+    if (isMessageOpen == false) {
+        document.getElementById("mySidepanel").style.width = "25vw";
+        document.getElementById("main-window").style.width = "75vw";
+        isMessageOpen = true;
+    }
+    else {
+        document.getElementById("mySidepanel").style.width = "0";
+        document.getElementById("main-window").style.width = "100vw";
+        isMessageOpen = false;
+    }
+
+    if(firsttime){
+        
+        document.querySelector('#chat-message-input').onkeyup = function (e) {          
+            if (e.keyCode === 13) { 
+                document.querySelector('#chat-message-submit').click();
+            }
+        };
+
+        document.querySelector('#chat-message-submit').onclick = function (e) {
+            const messageInputDom = document.querySelector('#chat-message-input');
+            const message = messageInputDom.value;
+            console.log(message);
+            socket.send(JSON.stringify({
+                'message': message,
+                'type': "msg",
+                'user_name': user_name,
+            }));
+            messageInputDom.value = '';
+        };
+        firsttime=false;
+    }
+    
+}
+    
+    
+        // console.log("im in chat")
+        // setChatButton();
+       
+        // document.querySelector('#chat-log').value = '';
+        
+
+    
+    
+
+function messagecame(message, name) {
+    message = name + " : " + message;
+    messages = [...messages, message];
+    // if (x.style.display === "block")
+    //     document.querySelector('#chat-log').value += (message + '\n');
+        $("ul").append(`<li class="message">${message}</li>`);
+        scrollToBottom()
+}
+const scrollToBottom = () => {
+    var d = $('.main__chat_window');
+    d.scrollTop(d.prop("scrollHeight"));
+}
 function muteUnmute() {
     var enabled = localStream.getAudioTracks()[0].enabled;
     if (enabled) {
@@ -221,4 +287,12 @@ function setStopVideo() {
 function setPlayVideo() {
     const html = `<button class="btn-sec" onclick="playStop()"><i class="fas fa-video-slash"></i></button>`
     document.querySelector('.main__video_button').innerHTML = html;
+}
+function setChatButton() {
+    const html = `<button onclick="chat()"><i class="fas fa-comment-slash"></i></button>`
+    document.querySelector('.main__chat_button').innerHTML = html;
+}
+function unsetChatButton() {
+    const html = `<button onclick="chat()"><i class="fas fa-comment"></i></button>`
+    document.querySelector('.main__chat_button').innerHTML = html;
 }
