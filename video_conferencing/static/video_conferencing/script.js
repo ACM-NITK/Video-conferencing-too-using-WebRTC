@@ -1,33 +1,30 @@
-var localStream = null;
-var videoalreadyadded = []
-var conntetedpeers = new Object()
-var displayMediaStream = null
-var endpoint = 'ws://' + window.location.host + '/ws/' + room_id + '/' + user_name + '/'
-var mediaConstraints = {
-    audio: true,
-    video: true
-};
-var messages = [];
+let messages = [];
 
-        
-var screenshare = false;
+let localStream = null;
+let videoalreadyadded = []
+let conntetedpeers = new Object()
+let displayMediaStream = null
+let endpoint = 'ws://' + window.location.host + '/ws/' + room_id + '/' + user_name + '/'
+let mediaConstraints = {
+    audio: false, 
+    video: true 
+};
+let screensharebool = false
 getLocalStreamFunc()
 socket = new WebSocket(endpoint)
-socket.onmessage = function (e) {
-    var data = JSON.parse(e.data).obj
-    if (data.type === "joined" && screenshare === true) {
-        invite(data);
-        setTimeout(function () { handlescreenshareandvid(data) }, 4000);
-    }
-    else if (data.type === "joined")
+socket.onmessage = function(e) {
+    let data = JSON.parse(e.data).obj
+    if(data.type === "joined" && screensharebool == true)
+        videoAndScreen(data)
+    else if(data.type === "joined")
         invite(data)
-    else if (data.type === "video-offer" && (data.target === user_name || data.target === user_name + '$'))
+    else if(data.type === "video-offer" && (data.target=== user_name || data.target=== user_name+'$'))
         handleVideoOfferMsg(data)
-    else if (data.type === "new-ice-candidate" && (data.target === user_name || data.target === user_name + '$'))
+    else if(data.type === "new-ice-candidate" && (data.target === user_name || data.target=== user_name+'$'))
         handleNewICECandidateMsg(data)
-    else if (data.type === "video-answer" && (data.target === user_name || data.target === user_name + '$'))
+    else  if(data.type === "video-answer" && (data.target === user_name || data.target=== user_name+'$'))
         handleAnswerMsg(data)
-    else if (data.type === "left")
+    else if(data.type === "left")
         handleLeftMsg(data)
     else if (data.type === "screenShareLeft")
         handleleftscreenshare(data);
@@ -35,44 +32,36 @@ socket.onmessage = function (e) {
         messagecame(data.message, data.user_name)
 
 }
-function handlescreenshareandvid(data) {
-    console.log(data.name);
-    user_name = user_name + '$';
-    inviteShare(data.name);
-    setTimeout(function () { user_name = user_name.substring(0, user_name.length - 1) }, 4000);
-}
-async function getLocalStreamFunc() {
+async function getLocalStreamFunc()
+{
     localStream = await navigator.mediaDevices.getUserMedia(mediaConstraints)
-    addVideoStream(localStream, user_name)
+    addVideoStream(localStream,user_name)
 }
-async function invite(data) {
+async function invite(data)
+{
     targetUsername = data.name;
     createPeerConnection(targetUsername);
     myPeerConnection = conntetedpeers[targetUsername][0]
     localStream = await navigator.mediaDevices.getUserMedia(mediaConstraints)
     localStream.getTracks().forEach(track => myPeerConnection.addTrack(track, localStream));
 }
-async function inviteShare(targetUsername) {
-    createPeerConnection(targetUsername);
-    myPeerConnection = conntetedpeers[targetUsername][0]
-    if (displayMediaStream)
-        myPeerConnection.addTrack(displayMediaStream.getTracks()[0], displayMediaStream);
-}
-function createPeerConnection(targetUsername) {
+function createPeerConnection(targetUsername)
+{
     myPeerConnection = new RTCPeerConnection({
         iceServers: [
             {
-                urls: "stun:stun.l.google.com:19302"
+            urls: "stun:stun.l.google.com:19302"
             }
         ]
     });
-    myPeerConnection.onicecandidate = tmpIcefunc = e => handleICECandidateEvent(e, targetUsername);
-    myPeerConnection.onnegotiationneeded = tmpfunc = e => handleNegotiationNeededEvent(e, targetUsername);
-    myPeerConnection.ontrack = tmpStreamfunc = e => handleRemoteStreamEvent(e, targetUsername);
-    conntetedpeers[targetUsername] = [myPeerConnection, []]
+    myPeerConnection.onicecandidate = tmpIcefunc = e => handleICECandidateEvent(e,targetUsername);
+    myPeerConnection.onnegotiationneeded = tmpfunc = e => handleNegotiationNeededEvent(e,targetUsername);
+    myPeerConnection.ontrack = tmpStreamfunc = e => handleRemoteStreamEvent(e,targetUsername);
+    conntetedpeers[targetUsername] = [myPeerConnection,[]]
     myPeerConnection = null
 }
-async function handleNegotiationNeededEvent(event, targetUsername) {
+async function handleNegotiationNeededEvent(event,targetUsername) 
+{
     myPeerConnection = conntetedpeers[targetUsername][0]
     await myPeerConnection.createOffer()
     await myPeerConnection.setLocalDescription();
@@ -83,18 +72,20 @@ async function handleNegotiationNeededEvent(event, targetUsername) {
         "sdp": myPeerConnection.localDescription
     }))
 }
-async function handleAnswerMsg(msg) {
-    var desc = new RTCSessionDescription(msg.sdp)
+async function handleAnswerMsg(msg)
+{
+    let desc = new RTCSessionDescription(msg.sdp)
     myPeerConnection = conntetedpeers[msg.name][0]
-    if (!!!desc)
+    if(!!!desc)
         return
     await myPeerConnection.setRemoteDescription(desc)
     candidates = conntetedpeers[msg.name][1]
     candidates.forEach(candidate => myPeerConnection.addIceCandidate(candidate))
-}
-async function handleVideoOfferMsg(msg) {
+} 
+async function handleVideoOfferMsg(msg) 
+{
     targetUsername = msg.name;
-    var desc = new RTCSessionDescription(msg.sdp);
+    let desc = new RTCSessionDescription(msg.sdp);
     createPeerConnection(targetUsername);
     myPeerConnection = conntetedpeers[msg.name][0]
     await myPeerConnection.setRemoteDescription(desc)
@@ -113,8 +104,10 @@ async function handleVideoOfferMsg(msg) {
         "sdp": myPeerConnection.localDescription
     }))
 }
-function handleICECandidateEvent(event, targetUsername) {
-    if (event.candidate) {
+function handleICECandidateEvent(event,targetUsername) 
+{
+    if (event.candidate) 
+    {
         socket.send(JSON.stringify({
             "type": "new-ice-candidate",
             "target": targetUsername,
@@ -123,49 +116,75 @@ function handleICECandidateEvent(event, targetUsername) {
         }))
     }
 }
-function handleNewICECandidateMsg(msg) {
-    var candidate = new RTCIceCandidate(msg.candidate);
+function handleNewICECandidateMsg(msg) 
+{
+    let candidate = new RTCIceCandidate(msg.candidate);
     candidates = conntetedpeers[msg.name][1]
     myPeerConnection = conntetedpeers[msg.name][0]
-    if (!myPeerConnection || !myPeerConnection.remoteDescription)
+    if(!myPeerConnection || !myPeerConnection.remoteDescription)
         candidates.push(candidate)
     else
         myPeerConnection.addIceCandidate(candidate)
 }
-function handleRemoteStreamEvent(event, user_id) {
-    addVideoStream(event.streams[0], user_id)
+function handleRemoteStreamEvent(event,user_id)
+{
+    addVideoStream(event.streams[0],user_id)
 }
-function handleLeftMsg(msg) {
+function handleLeftMsg(msg)
+{
     document.getElementById(msg.name).remove()
     videoalreadyadded = videoalreadyadded.filter(i => i !== msg.name)
     delete conntetedpeers[msg.name]
+    document.getElementById(msg.name + '$').remove()
+    videoalreadyadded = videoalreadyadded.filter(i => i !== msg.name + '$')
+    delete conntetedpeers[msg.name + '$']
 }
-function handleleftscreenshare(msg) {
+async function inviteShare(targetUsername)
+{
+    createPeerConnection(targetUsername);
+    myPeerConnection = conntetedpeers[targetUsername][0]
+    myPeerConnection.addTrack(displayMediaStream.getTracks()[0],displayMediaStream);
+}
+async function shareScreen()
+{
+    user_name=user_name+"$"
+    screensharebool = true
+    displayMediaStream=await navigator.mediaDevices.getDisplayMedia();
+    addVideoStream(displayMediaStream,user_name)
+    for (let key in conntetedpeers){
+        inviteShare(key);
+    }
+    setTimeout(function () { user_name = user_name.substring(0, user_name.length - 1) }, 2000);
+    displayMediaStream.getVideoTracks()[0].onended = screenshareended
+}
+async function videoAndScreen(data)
+{
+    console.log("here")
+    invite(data)
+    setTimeout(function () { 
+        user_name = user_name + '$';
+        inviteShare(data.name)
+        setTimeout(function () { user_name = user_name.substring(0, user_name.length - 1) }, 2000);
+    }, 2000);
+}
+function screenshareended() 
+{
+    screensharebool = false
+    socket.send(JSON.stringify({
+        "name": user_name + '$',
+        "type": "screenShareLeft",
+    }))
+}
+function handleleftscreenshare(msg) 
+{
     videoalreadyadded = videoalreadyadded.filter(i => i !== msg.name)
     document.getElementById(msg.name).remove();
     delete conntetedpeers[msg.name];
 }
-async function shareScreen() {
-    user_name = user_name + "$"
-    screenshare = true
-
-    displayMediaStream = await navigator.mediaDevices.getDisplayMedia();
-
-    addVideoStream(displayMediaStream, user_name)
-    for (var key in conntetedpeers) {
-        inviteShare(key);
-    }
-    setTimeout(function () { user_name = user_name.substring(0, user_name.length - 1) }, 1000);
-    displayMediaStream.getVideoTracks()[0].onended = function () {
-        screenshare = false;
-        socket.send(JSON.stringify({
-            "name": user_name + '$',
-            "type": "screenShareLeft",
-        }))
-    }
-}
-function addVideoStream(stream, user_id) {
-    if (videoalreadyadded.includes(user_id)) {
+function addVideoStream(stream,user_id) 
+{
+    if(videoalreadyadded.includes(user_id))
+    {
         const video = document.getElementById(user_id)
         video.srcObject = stream
         video.addEventListener('loadedmetadata', () => {
@@ -175,7 +194,7 @@ function addVideoStream(stream, user_id) {
     }
     const video = document.createElement('video')
     video.id = user_id
-    if (user_id === user_name)
+    if(user_id === user_name)
         video.muted = true;
     const videoGrid = document.getElementById('video-grid')
     video.srcObject = stream
@@ -224,15 +243,7 @@ function toggleNav(){
     
 }
     
-    
-        // console.log("im in chat")
-        // setChatButton();
-       
-        // document.querySelector('#chat-log').value = '';
-        
 
-    
-    
 
 function messagecame(message, name) {
     message = name + " : " + message;
@@ -266,33 +277,30 @@ function playStop() {
         document.getElementById(user_name).srcObject.getVideoTracks()[0].enabled = false;
         setPlayVideo()
     }
-    else {
+    else
+    {
         setStopVideo()
         localStream.getVideoTracks()[0].enabled = true;
         document.getElementById(user_name).srcObject.getVideoTracks()[0].enabled = true;
     }
 }
-function setMuteButton() {
+function setMuteButton()
+{
     const html = `<button onclick="muteUnmute()"><i class="fas fa-microphone"></i></button>`
     document.querySelector('.main__mute_button').innerHTML = html;
 }
-function setUnmuteButton() {
+function setUnmuteButton()
+{
     const html = `<button class="btn-sec" onclick="muteUnmute()"><i class="fas fa-microphone-slash"></i></button>`
     document.querySelector('.main__mute_button').innerHTML = html;
 }
-function setStopVideo() {
+function setStopVideo()
+{
     const html = `<button onclick="playStop()"><i class="fas fa-video"></i></button>`
     document.querySelector('.main__video_button').innerHTML = html;
 }
-function setPlayVideo() {
+function setPlayVideo()
+{
     const html = `<button class="btn-sec" onclick="playStop()"><i class="fas fa-video-slash"></i></button>`
     document.querySelector('.main__video_button').innerHTML = html;
-}
-function setChatButton() {
-    const html = `<button onclick="chat()"><i class="fas fa-comment-slash"></i></button>`
-    document.querySelector('.main__chat_button').innerHTML = html;
-}
-function unsetChatButton() {
-    const html = `<button onclick="chat()"><i class="fas fa-comment"></i></button>`
-    document.querySelector('.main__chat_button').innerHTML = html;
 }
