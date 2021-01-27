@@ -2,7 +2,6 @@ from asgiref.sync import async_to_sync
 from channels.generic.websocket import WebsocketConsumer
 import json
 
-
 class ConnectConsumer(WebsocketConsumer):
     def connect(self):
         # print("HERE")
@@ -33,7 +32,6 @@ class ConnectConsumer(WebsocketConsumer):
             self.room_id,
             self.channel_name
         )
-# made changes here
 
     def receive(self, text_data):
         text_data_json = json.loads(text_data)
