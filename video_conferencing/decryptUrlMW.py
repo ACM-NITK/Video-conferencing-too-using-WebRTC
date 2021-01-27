@@ -23,12 +23,15 @@ class decryptUrlMiddleware(BaseMiddleware):
         if (checkForApiUrl == "/api/"):
             return None
 
+        if (checkForApiUrl == "/favi"):
+            return None
+
         key = "abcd"
         decrypterObj = AESCipher(key)
         url_path = request.path_info
         refined_url_path = url_path[1:]  # Removing the forward slash
         decrypted_path = decrypterObj.aesdecrypt(refined_url_path)
-        refined_decrypted_path = "/" + decrypted_path    
+        refined_decrypted_path = "/" + decrypted_path
 
         request.path_info = refined_decrypted_path
         # print("Decryption Done")
