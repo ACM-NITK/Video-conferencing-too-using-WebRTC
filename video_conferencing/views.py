@@ -8,6 +8,7 @@ import string
 
 # Create your views here.
 
+
 key = "abcd"
 
 attendees = {}
@@ -36,3 +37,4 @@ class MeetingUrl(View) :
         decrypted_url = "127.0.0.1:8000/" + encrypterObj.aesdecrypt(encrypted_path)
 
         return JsonResponse({"url" : encrypted_url, "decrypted_url" : decrypted_url}, safe=False)
+
