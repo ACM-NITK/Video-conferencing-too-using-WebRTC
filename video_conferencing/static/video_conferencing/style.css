@@ -39,6 +39,13 @@ video {
     margin: 10px;
     box-shadow: 0 10px 20px 0 rgba(0,0,0,0.2);
 }
+#canvas{
+    height: 600px;
+    width: 800px;
+    margin: 10px;
+    background-color: white;
+    box-shadow: 0 10px 20px 0 rgba(0,0,0,0.2);
+}
 .main-window {
     background-color: #202124;
     color: white;
