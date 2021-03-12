@@ -181,7 +181,8 @@ function addVideoStream(stream, user_id) {
         })
         return
     }
-    const video = document.createElement('video')
+    const video = document.createElement('video');
+    video.className = "videoStyle"
     video.id = user_id
     if (user_id === user_name)
         video.muted = true;
@@ -200,16 +201,19 @@ var plots = [];
 messages.forEach(i => $("ul").append(`<li class="message">${i}</li>`));
 function whiteBoard() {
     if (board == false) {
+        board = true;
         socket.send(JSON.stringify({
             "type": "openBoard",
         }))
         const canvas = document.createElement('canvas');
         canvas.id = 'canvas';
-        // canvas.style.height = "600px";
-        // canvas.style.width = "800px";
-        const videoGrid = document.getElementById('video-grid');
+        var eachVidGrid = document.getElementsByClassName('videoStyle');
+        for (var i = 0; i < eachVidGrid.length; i++) {
+            eachVidGrid.item(i).style.height = "100px";
+            eachVidGrid.item(i).style.width = "100px";
+        }
+        const videoGrid = document.getElementById('video-grid')
         videoGrid.append(canvas);
-        board = true;
         ctx = canvas.getContext('2d');
         canvas.addEventListener('mousedown', startDrawing);
         canvas.addEventListener('mouseup', finishDrawing);
@@ -296,9 +300,6 @@ function toggleNav() {
     }
 
 }
-
-
-
 function messagecame(message, name) {
     message = name + " : " + message;
     messages = [...messages, message];
