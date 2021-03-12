@@ -10,6 +10,7 @@ let mediaConstraints = {
     video: true
 };
 let screensharebool = false
+var board = false;
 getLocalStreamFunc()
 socket = new WebSocket(endpoint)
 socket.onmessage = function (e) {
@@ -32,6 +33,11 @@ socket.onmessage = function (e) {
         messagecame(data.message, data.user_name)
     else if (data.type === "whiteBoard")
         drawOnCanvas(data.plots);
+    else if (data.type === "openBoard") {
+        if (board == false)
+            whiteBoard();
+    }
+
 
 }
 async function getLocalStreamFunc() {
@@ -147,7 +153,6 @@ async function shareScreen() {
     displayMediaStream.getVideoTracks()[0].onended = screenshareended
 }
 async function videoAndScreen(data) {
-    console.log("here")
     invite(data)
     setTimeout(function () {
         user_name = user_name + '$';
@@ -191,11 +196,13 @@ function addVideoStream(stream, user_id) {
 var isMessageOpen = false
 var firsttime = true;
 var ctx = null;
-var board = false;
 var plots = [];
 messages.forEach(i => $("ul").append(`<li class="message">${i}</li>`));
 function whiteBoard() {
     if (board == false) {
+        socket.send(JSON.stringify({
+            "type": "openBoard",
+        }))
         const canvas = document.createElement('canvas');
         canvas.id = 'canvas';
         // canvas.style.height = "600px";
@@ -210,7 +217,7 @@ function whiteBoard() {
     }
     else {
         document.getElementById('canvas').remove();
-        board=false;
+        board = false;
     }
 }
 
