@@ -190,21 +190,28 @@ function addVideoStream(stream, user_id) {
 }
 var isMessageOpen = false
 var firsttime = true;
-let ctx = null;
+var ctx = null;
+var board = false;
 var plots = [];
 messages.forEach(i => $("ul").append(`<li class="message">${i}</li>`));
 function whiteBoard() {
-    const canvas = document.createElement('canvas');
-    canvas.id = 'canvas';
-    // canvas.style.height = "600px";
-    // canvas.style.width = "800px";
-    const videoGrid = document.getElementById('video-grid');
-    videoGrid.append(canvas);
-
-    ctx = canvas.getContext('2d');
-    canvas.addEventListener('mousedown', startDrawing);
-    canvas.addEventListener('mouseup', finishDrawing);
-    canvas.addEventListener('mousemove', draw);
+    if (board == false) {
+        const canvas = document.createElement('canvas');
+        canvas.id = 'canvas';
+        // canvas.style.height = "600px";
+        // canvas.style.width = "800px";
+        const videoGrid = document.getElementById('video-grid');
+        videoGrid.append(canvas);
+        board = true;
+        ctx = canvas.getContext('2d');
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mouseup', finishDrawing);
+        canvas.addEventListener('mousemove', draw);
+    }
+    else {
+        document.getElementById('canvas').remove();
+        board=false;
+    }
 }
 
 let drawing = false;
