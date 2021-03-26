@@ -6,7 +6,7 @@ let conntetedpeers = new Object()
 let displayMediaStream = null
 let endpoint = 'ws://' + window.location.host + '/ws/' + room_id + '/' + user_name + '/'
 let mediaConstraints = {
-    audio: false,
+    audio: true,
     video: true
 };
 let screensharebool = false
